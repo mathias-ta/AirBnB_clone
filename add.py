@@ -1,4 +1,4 @@
-#!/usr/bin/pytnon3
+#!/usr/bin/python3
 """
 Add two numbers
 """
