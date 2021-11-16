@@ -8,6 +8,7 @@ from uuid import uuid4, UUID
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, Float, DateTime
 
+
 class BaseModel():
     """
     Contain different functions and atributes for base model
