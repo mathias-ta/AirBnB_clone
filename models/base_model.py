@@ -2,10 +2,8 @@
 """
 Module contain BaseModel class of models module
 """
-import models
 from uuid import uuid4, UUID
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Float, DateTime
 
 
 class BaseModel():
@@ -22,12 +20,14 @@ class BaseModel():
             del kwargs['__class__']
             self.__dict__.update(kwargs)
         else:
+            from models import storage
             self.id = str(uuid4())
             self.created_at = datetime.now()
             self.update_at = datetime.now()
             models.storage.new(self)
 
     def save(self):
+        from models import storage
         self.updated_at = datetime.now()
         models.storage.new(self)
         models.storage.save()
