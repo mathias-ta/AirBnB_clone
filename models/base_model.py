@@ -2,8 +2,6 @@
 """
 Module contain BaseModel class of models module
 """
-
-import models
 from uuid import uuid4, UUID
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, Float, DateTime
@@ -22,36 +20,20 @@ class BaseModel():
 
     def __init__(self, *args, **kwargs):
         if kwargs:
-            self.set_attributes(kwargs)
+            kwargs['updated_at'] = datetime.strptime(kwargs['updated_at'],
+                                                     '%Y-%m-%dT%H:%M:%S.%f')
+            kwargs['created_at'] = datetime.strptime(kwargs['created_at'],
+                                                     '%Y-%m-%dT%H:%M:%S.%f')
+            del kwargs['__class__']
+            self.__dict__.update(kwargs)
         else:
             self.id = str(uuid4())
-            self.created_at = datetime.utcnow()
-
-    def set_attributes(self, attr_dict):
-        """
-            private: converts attr_dict values to python class attributes
-        """
-        if 'id' not in attr_dict:
-            attr_dict['id'] = str(uuid4())
-        if 'created_at' not in attr_dict:
-            attr_dict['created_at'] = datetime.utcnow()
-        elif not isinstance(attr_dict['created_at'], datetime):
-            attr_dict['created_at'] = datetime.strptime(
-                attr_dict['created_at'], "%Y-%m-%d %H:%M:%S.%f"
-            )
-        if 'updated_at' not in attr_dict:
-            attr_dict['updated_at'] = datetime.utcnow()
-        elif not isinstance(attr_dict['updated_at'], datetime):
-            attr_dict['updated_at'] = datetime.strptime(
-                attr_dict['updated_at'], "%Y-%m-%d %H:%M:%S.%f"
-            )
-        if STORAGE_TYPE != 'db':
-            attr_dict.pop('__class__', None)
-        for attr, val in attr_dict.items():
-            setattr(self, attr, val)
+            self.created_at = datetime.now()
+            self.update_at = datetime.now()
+            models.storage.new(self)
 
     def save(self):
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now()
         models.storage.new(self)
         models.storage.save()
 
@@ -61,5 +43,9 @@ class BaseModel():
 
     def to_dict(self):
         dic = {}
-        dic["id"] = self.id
-        return dic
+        dic.update(self.__dict__)
+        dic.update({'__class__':
+                   (str(type(self)).split('.')[-1]).split('\'')[0]})
+        dic['created_at'] = self.created_at.isoformat()
+        dic['updated_at'] = self.updated_at.isoformat()
+        return dictionary
